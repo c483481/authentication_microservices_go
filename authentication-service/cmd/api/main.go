@@ -1,6 +1,7 @@
 package main
 
 import (
+	"authentication-service/data"
 	"authentication-service/migration"
 	"flag"
 	"fmt"
@@ -77,6 +78,12 @@ func main() {
 	migration.Up(db)
 	
 	log.Println("Successfully run database migration up.")
+
+	log.Println("Initializing validator...")
+	
+	SetupValidate()
+
+	log.Println("Successfully initialized validator.")
 
 	log.Println("Starting server...")
 	// set up config app
