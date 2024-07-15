@@ -23,6 +23,12 @@ const (
 )
 
 func main() {
+	log.Println("Initializing validator...")
+
+	SetupValidate()
+	
+	log.Println("Successfully initialized validator.")
+
 	log.Println("Starting server...")
 	// set up config app
 	app := fiber.New(fiber.Config{
@@ -68,6 +74,8 @@ func main() {
 			"version":  appVersion,
 		})
 	})
+
+	app.Post("/http", HandleHttpSubmission)
 
 	app.Use(func(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusNotFound).JSON(map[string]any{
