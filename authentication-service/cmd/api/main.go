@@ -1,6 +1,8 @@
 package main
 
 import (
+	"authentication-service/migration"
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
@@ -49,6 +51,32 @@ func main() {
 	defer db.Close()
 
 	log.Println("Successfully connected to the database.")
+
+	downFlag := flag.Bool("down", false, "Run database migration down")
+	downAllFlag := flag.Bool("down-all", false, "Run all database migrations down")
+
+	// Parse the flags
+	flag.Parse()
+
+	if *downFlag {
+		log.Println("Running database migration down...")
+		migration.Down(db)
+		log.Println("Successfully run database migration down.")
+		return
+	}
+
+	if *downAllFlag {
+		log.Println("Running all database migrations down...")
+		migration.DownAll(db)
+		log.Println("Successfully run all database migrations down.")
+		return
+	}
+
+	log.Println("Running database migration up...")
+
+	migration.Up(db)
+	
+	log.Println("Successfully run database migration up.")
 
 	log.Println("Starting server...")
 	// set up config app
