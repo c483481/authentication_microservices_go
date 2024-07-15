@@ -76,6 +76,7 @@ func main() {
 	})
 
 	app.Post("/http", HandleHttpSubmission)
+	app.Post("/rpc", HandleRPCSubmission)
 
 	app.Use(func(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusNotFound).JSON(map[string]any{
