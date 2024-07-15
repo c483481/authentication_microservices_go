@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -12,6 +13,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/monitor"
 	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/joho/godotenv"
 
 	"github.com/goccy/go-json"
 )
@@ -23,6 +25,31 @@ const (
 )
 
 func main() {
+	log.Println("Loading environment variables...")
+	err := godotenv.Load()
+	
+	if err != nil {
+		log.Println("Error loading .env file, attempting to use environment variables")
+	}
+
+	databaseURL := os.Getenv("DATABASE_URL")
+
+	if databaseURL == "" {
+		log.Fatal("DATABASE_URL environment variable is not set")
+	}
+
+	log.Println("Opening database...")
+
+	db, err := openDB(databaseURL)
+	
+	if err != nil {
+		log.Fatal(err)
+	}
+	
+	defer db.Close()
+
+	log.Println("Successfully connected to the database.")
+
 	log.Println("Starting server...")
 	// set up config app
 	app := fiber.New(fiber.Config{
