@@ -79,6 +79,12 @@ func main() {
 	
 	log.Println("Successfully run database migration up.")
 
+	log.Println("Initializing model...")
+	
+	model := data.New(db)
+
+	log.Println("Successfully initialized model.")
+
 	log.Println("Initializing validator...")
 	
 	SetupValidate()
@@ -130,6 +136,10 @@ func main() {
 			"version":  appVersion,
 		})
 	})
+
+	log.Println("Setting routes...")
+	
+	setAuthRoutes(app.Group("/auth"), &model.Users)
 
 	app.Use(func(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusNotFound).JSON(map[string]any{
