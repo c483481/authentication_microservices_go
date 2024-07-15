@@ -6,7 +6,9 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
+	"net/rpc"
 	"os"
 	"time"
 
@@ -25,6 +27,7 @@ const (
 	appName = "Authentication Service"
 	appVersion = "0.0.0"
 	appPort = 80
+	rpcPort = 5000
 )
 
 func main() {
@@ -91,6 +94,16 @@ func main() {
 
 	log.Println("Successfully initialized validator.")
 
+	err = rpc.Register(&RPCServer{
+		users: &model.Users,
+	})
+
+	if err != nil {
+		log.Fatalf("Error registering RPC server: %v", err)
+	}
+
+	go startRPCServer()
+
 	log.Println("Starting server...")
 	// set up config app
 	app := fiber.New(fiber.Config{
@@ -150,4 +163,21 @@ func main() {
 
 	log.Println("Server started")
 	log.Fatal(app.Listen(fmt.Sprintf(":%d", appPort)))
+}
+
+func startRPCServer() {
+	log.Println("Starting RPC server on port", rpcPort)
+	listen, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", rpcPort))
+	if err != nil {
+		log.Fatalf("Error starting RPC server: %v", err)
+	}
+	defer listen.Close()
+	for {
+		conn, err := listen.Accept()
+		if err != nil {
+			log.Println("Error accepting RPC connection: ", err)
+			continue
+		}
+		go rpc.ServeConn(conn)
+	}
 }

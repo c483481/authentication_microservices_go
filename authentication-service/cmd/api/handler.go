@@ -57,3 +57,13 @@ func ValidateBody(ctx *fiber.Ctx, data any) *ErrorResponseType {
 
 	return nil
 }
+
+func ValidateStruct(data any) *ErrorResponseType {
+	err := validate.Struct(data)
+
+	if err != nil {
+		return BadRequestResponse
+	}
+
+	return nil
+}
