@@ -1,8 +1,6 @@
 package main
 
 import (
-	"net/rpc"
-
 	"github.com/goccy/go-json"
 	"github.com/gofiber/fiber/v2"
 )
@@ -31,7 +29,7 @@ func HandleRPCSubmission(c *fiber.Ctx) error {
 }
 
 func authenticateRPC(c *fiber.Ctx, payload AuthPayload) error {
-	client, err := rpc.Dial("tcp", "authentication-services:5000")
+	client, err := RPCPoolAuth.Get()
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(&ErrorResponseType{
 			Success: false,
@@ -39,8 +37,6 @@ func authenticateRPC(c *fiber.Ctx, payload AuthPayload) error {
 			Message: err.Error(),
 		})
 	}
-
-	defer client.Close()
 	
 	var result string
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"broker-service/internal/connection"
 	"fmt"
 	"log"
 	"net/http"
@@ -22,12 +23,18 @@ const (
 	appPort = 80
 )
 
+var RPCPoolAuth *connection.RPCPool
+var GRPCPoolAuth *connection.GRPCPool
+
 func main() {
 	log.Println("Initializing validator...")
 
 	SetupValidate()
 	
 	log.Println("Successfully initialized validator.")
+
+	RPCPoolAuth = connection.NewRPCPool("authentication-services:5000")
+	GRPCPoolAuth = connection.NewGRPCPool("authentication-services:50000")
 
 	log.Println("Starting server...")
 	// set up config app
