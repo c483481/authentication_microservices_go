@@ -6,8 +6,6 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 func HandleGRPCSubmission(c *fiber.Ctx) error {
@@ -37,7 +35,7 @@ func authenticateGRPC(c *fiber.Ctx, payload *AuthPayload) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	conn, err := grpc.NewClient("authentication-services:50000", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := GRPCPoolAuth.Get()
 
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(&ErrorResponseType{
@@ -46,8 +44,6 @@ func authenticateGRPC(c *fiber.Ctx, payload *AuthPayload) error {
 			Message: err.Error(),
 		})
 	}
-
-	defer conn.Close()
 
 	client := auth.NewAuthServiceClient(conn)
 
