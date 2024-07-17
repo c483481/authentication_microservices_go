@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"logger-services/data"
 	"net/http"
 	"time"
 
@@ -12,6 +13,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/monitor"
 	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/joho/godotenv"
 
 	"github.com/goccy/go-json"
 )
@@ -23,6 +25,23 @@ const (
 )
 
 func main() {
+	log.Println("Loading environment variables...")
+	err := godotenv.Load()
+	if err != nil {
+		log.Println("Error loading .env file, attempting to use environment variables")
+	}
+
+	log.Println("Connecting to MongoDB...")
+	mongo, err := connectMongo()
+	if err != nil {
+		log.Fatalf("Error connecting to MongoDB: %v", err)
+	}
+	log.Println("Connected to MongoDB")
+
+	log.Println("Loading models...")
+	models := data.New(mongo)
+	log.Println("Models loaded")
+	
 	log.Println("Initializing validator...")
 
 	SetupValidate()
@@ -74,6 +93,8 @@ func main() {
 			"version":  appVersion,
 		})
 	})
+
+	setRoutes(app.Group("/logs"), &models.LogEntry)
 
 	app.Use(func(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusNotFound).JSON(map[string]any{

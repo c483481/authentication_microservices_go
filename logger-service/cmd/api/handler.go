@@ -30,6 +30,11 @@ type ErrorResponseType struct {
 	Data    any    	`json:"data,omitempty"`
 }
 
+type LogRequest struct {
+	Name string `json:"name" validate:"required,min=3,max=255"`
+	Data string `json:"data" validate:"required,min=3,max=255"`
+}
+
 var (
 	BadRequestResponse = &ErrorResponseType{
 		Success: false,
