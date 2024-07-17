@@ -24,7 +24,6 @@ const (
 	appName = "Logger Service"
 	appVersion = "0.0.0"
 	appPort = 80
-
 	rpcPort = 5000
 )
 
@@ -38,6 +37,7 @@ func main() {
 	log.Println("Connecting to MongoDB...")
 	mongo, err := connectMongo()
 	if err != nil {
+		time.Sleep(2 * time.Second)
 		log.Fatalf("Error connecting to MongoDB: %v", err)
 	}
 	log.Println("Connected to MongoDB")

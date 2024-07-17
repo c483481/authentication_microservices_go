@@ -52,6 +52,7 @@ func main() {
 	db, err := openDB(databaseURL)
 	
 	if err != nil {
+		time.Sleep(2 * time.Second)
 		log.Fatal(err)
 	}
 	

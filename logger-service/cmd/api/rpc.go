@@ -11,7 +11,7 @@ type RPCServer struct {
 	LogEntry *data.LogEntry
 }
 
-func (r *RPCServer) LogItems(req *LogRequest, resp *string) error {
+func (r *RPCServer) LogItems(req LogRequest, resp *string) error {
 	if err := ValidateStruct(&req); err != nil {
 		jsonResponse, _ := json.Marshal(&err)
 		return errors.New(string(jsonResponse))

@@ -24,6 +24,7 @@ const (
 )
 
 var RPCPoolAuth *connection.RPCPool
+var RPCPoolLogs *connection.RPCPool
 var GRPCPoolAuth *connection.GRPCPool
 
 func main() {
@@ -35,6 +36,8 @@ func main() {
 
 	RPCPoolAuth = connection.NewRPCPool("authentication-services:5000")
 	GRPCPoolAuth = connection.NewGRPCPool("authentication-services:50000")
+
+	RPCPoolLogs = connection.NewRPCPool("logger-services:5000")
 
 	log.Println("Starting server...")
 	// set up config app
