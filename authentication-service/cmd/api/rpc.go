@@ -8,21 +8,16 @@ import (
 )
 
 type RPCServer struct {
-	users *data.Users
+	Users *data.Users
 }
 
-type RPCPayload struct {
-	Email string `validate:"required,email,max=255"`
-	Password string `validate:"required,min=8,max=255"`
-}
-
-func (r *RPCServer) Auth(payload RPCPayload, resp *string) error {
+func (r *RPCServer) Auth(payload AuthPayload, resp *string) error {
 	if err := ValidateStruct(&payload); err != nil {
 		jsonResponse, _ := json.Marshal(&payload)
 		return errors.New(string(jsonResponse))
 	}
 
-	user, err := r.users.GetByEmail(payload.Email)
+	user, err := r.Users.GetByEmail(payload.Email)
 
 	if err != nil {
 		jsonResponse, _ := json.Marshal(&ErrorResponseType{
