@@ -2,6 +2,7 @@ package main
 
 import (
 	"broker-service/auth"
+	"broker-service/logs"
 	"context"
 	"time"
 
@@ -26,6 +27,16 @@ func HandleGRPCSubmission(c *fiber.Ctx) error {
 		}
 
 		return authenticateGRPC(c, &authPayload)
+	case "log":
+		logsPayload := &LogsPayload{
+			Name: payload.Data["name"].(string),
+			Data: payload.Data["data"].(string),
+		}
+		if valid := ValidateStruct(logsPayload); valid != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(valid)
+		}
+
+		return insertLogsGRPC(c, logsPayload)
 	default:
 		return WrapData(c, "Invalid action")
 	}
@@ -61,4 +72,36 @@ func authenticateGRPC(c *fiber.Ctx, payload *AuthPayload) error {
 	}
 
 	return WrapData(c, users.User)
+}
+
+func insertLogsGRPC(c *fiber.Ctx, payload *LogsPayload) error {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	conn, err := GRPCPoolLogs.Get()
+
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(&ErrorResponseType{
+			Success: false,
+			Code:    "E_REQ",
+			Message: err.Error(),
+		})
+	}
+
+	client := logs.NewLogServiceClient(conn)
+
+	item, err := client.WriteLog(ctx, &logs.LogRequest{
+		Name: payload.Name,
+		Data: payload.Data,
+	})
+
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(&ErrorResponseType{
+			Success: false,
+			Code:    "E_REQ",
+			Message: err.Error(),
+		})
+	}
+
+	return WrapData(c, item) 
 }
