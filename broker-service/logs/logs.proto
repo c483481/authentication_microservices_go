@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package logs;
+
+option go_package = "/logs";
+
+import "google/protobuf/timestamp.proto";
+
+message LogRequest {
+	string name = 1;
+    string data = 2;
+}
+
+message LogResponse {
+	string name = 1;
+    string data = 2;
+    google.protobuf.Timestamp created_at = 6;
+    google.protobuf.Timestamp updated_at = 7;
+}
+
+service LogService {
+	rpc WriteLog(LogRequest) returns (LogResponse);
+}
