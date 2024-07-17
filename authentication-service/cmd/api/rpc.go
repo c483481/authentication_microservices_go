@@ -13,7 +13,7 @@ type RPCServer struct {
 
 func (r *RPCServer) Auth(payload AuthPayload, resp *string) error {
 	if err := ValidateStruct(&payload); err != nil {
-		jsonResponse, _ := json.Marshal(&payload)
+		jsonResponse, _ := json.Marshal(&err)
 		return errors.New(string(jsonResponse))
 	}
 

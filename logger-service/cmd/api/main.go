@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"log"
 	"logger-services/data"
+	"net"
 	"net/http"
+	"net/rpc"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -22,6 +24,8 @@ const (
 	appName = "Logger Service"
 	appVersion = "0.0.0"
 	appPort = 80
+
+	rpcPort = 5000
 )
 
 func main() {
@@ -47,6 +51,16 @@ func main() {
 	SetupValidate()
 	
 	log.Println("Successfully initialized validator.")
+
+	err = rpc.Register(&RPCServer{
+		LogEntry: &models.LogEntry,
+	})
+
+	if err != nil {
+		log.Fatalf("Error registering RPC server: %v", err)
+	}
+
+	go startRPCServer()
 
 	log.Println("Starting server...")
 	// set up config app
@@ -105,4 +119,21 @@ func main() {
 
 	log.Println("Server started")
 	log.Fatal(app.Listen(fmt.Sprintf(":%d", appPort)))
+}
+
+func startRPCServer() {
+	log.Println("Starting RPC server on port", rpcPort)
+	listen, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", rpcPort))
+	if err != nil {
+		log.Fatalf("Error starting RPC server: %v", err)
+	}
+	defer listen.Close()
+	for {
+		conn, err := listen.Accept()
+		if err != nil {
+			log.Println("Error accepting RPC connection: ", err)
+			continue
+		}
+		go rpc.ServeConn(conn)
+	}
 }
