@@ -37,7 +37,18 @@ func HandleHttpSubmission(c *fiber.Ctx) error {
 		}
 
 		return insertLogs(c, logsPayload)
+	case "mail":
+		mailPayload := &MailPayload{
+			From: payload.Data["from"].(string),
+			To: payload.Data["to"].(string),
+			Subject: payload.Data["subject"].(string),
+			Message: payload.Data["message"].(string),
+		}
+		if valid := ValidateStruct(mailPayload); valid != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(valid)
+		}
 
+		return sendMail(c, mailPayload)
 	default:
 		return WrapData(c, "Invalid action")
 	}
@@ -118,4 +129,38 @@ func insertLogs(c *fiber.Ctx, payload *LogsPayload) error {
 	}
 
 	return WrapData(c, jsonResponse.Data)
+}
+
+func sendMail(c *fiber.Ctx, payload *MailPayload) error {
+	response, err:= SendRequest("POST", "http://mail-services/mail/send", payload)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(&ErrorResponseType{
+			Success: false,
+			Code:    "E_REQ",
+			Message: "Failed to create request",
+		})
+	}
+
+	defer response.Body.Close()
+
+	switch response.StatusCode {
+	case http.StatusOK:
+		var jsonResponse AppResponses
+		err := json.NewDecoder(response.Body).Decode(&jsonResponse)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(&ErrorResponseType{
+				Success: false,
+				Code:    "E_REQ",
+				Message: "Failed to create request",
+			})
+		}
+
+		return WrapData(c, jsonResponse.Data)
+	default:
+		return c.Status(fiber.StatusInternalServerError).JSON(&ErrorResponseType{
+			Success: false,
+			Code:    "E_REQ",
+			Message: "Failed to create request",
+		})
+	}
 }

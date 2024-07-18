@@ -40,6 +40,26 @@ services:
       MONGO_USERNAME: admin
       MONGO_PASSWORD: password
 
+  mail-services:
+    build:
+      context: ./../mailer-service
+      dockerfile: ./../mailer-service/Dockerfile
+    restart: always
+    deploy:
+      mode: replicated
+      replicas: 1
+    depends_on:
+      - mailhog
+    environment:
+      SMTP_DOMAIN: localhost
+      SMTP_HOST: mailhog
+      SMTP_PORT: 1025
+      SMTP_USERNAME: ""
+      SMTP_PASSWORD: ""
+      SMTP_ENCRYPTION: none
+      SMTP_FROM_ADDRESS: "john.smith@example.com"
+      SMTP_FROM_NAME: "John Smith"
+
   postgres:
     image: "postgres:14.2"
     deploy:
@@ -65,3 +85,12 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: password
     volumes:
       - ./db-data/mongo/:/data/db
+
+  mailhog:
+    image: "mailhog/mailhog:latest"
+    ports:
+      - "8026:8025"
+    restart: always
+    deploy:
+      mode: replicated
+      replicas: 1
