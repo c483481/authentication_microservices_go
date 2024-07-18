@@ -12,6 +12,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/monitor"
 	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/joho/godotenv"
 
 	"github.com/goccy/go-json"
 )
@@ -24,6 +25,20 @@ const (
 
 
 func main() {
+	log.Println("Loading .env file...")
+	err := godotenv.Load()
+	if err != nil {
+		log.Println("Error loading .env file, attempting to use environment variables")
+	}
+
+	log.Println("Creating mailer...")
+	mail := createMail()
+	log.Println("Mailer created")
+
+	log.Println("Setting up validator...")
+	SetupValidate()
+	log.Println("Validator setuped")
+	
 	log.Println("Starting server...")
 	// set up config app
 	app := fiber.New(fiber.Config{
@@ -69,6 +84,9 @@ func main() {
 			"version":  appVersion,
 		})
 	})
+
+	log.Println("Setting routes...")
+	setUpRoutes(app.Group("/mail"), mail)
 	
 	app.Use(func(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusNotFound).JSON(map[string]any{
