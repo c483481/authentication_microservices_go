@@ -23,6 +23,8 @@ const (
 	appPort = 80
 )
 
+var mailer Mail
+
 
 func main() {
 	log.Println("Loading .env file...")
@@ -32,7 +34,7 @@ func main() {
 	}
 
 	log.Println("Creating mailer...")
-	mail := createMail()
+	mailer = createMail()
 	log.Println("Mailer created")
 
 	log.Println("Setting up validator...")
@@ -86,7 +88,7 @@ func main() {
 	})
 
 	log.Println("Setting routes...")
-	setUpRoutes(app.Group("/mail"), mail)
+	app.Post("/mail/send", HandleSendEmail)
 	
 	app.Use(func(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusNotFound).JSON(map[string]any{
