@@ -27,6 +27,7 @@ var RPCPoolAuth *connection.RPCPool
 var RPCPoolLogs *connection.RPCPool
 var GRPCPoolAuth *connection.GRPCPool
 var GRPCPoolLogs *connection.GRPCPool
+var RPCPoolMail *connection.RPCPool
 
 func main() {
 	log.Println("Initializing validator...")
@@ -40,6 +41,8 @@ func main() {
 
 	RPCPoolLogs = connection.NewRPCPool("logger-services:5000")
 	GRPCPoolLogs = connection.NewGRPCPool("logger-services:50000")
+
+	RPCPoolMail = connection.NewRPCPool("mail-services:5000")
 
 	log.Println("Starting server...")
 	// set up config app
