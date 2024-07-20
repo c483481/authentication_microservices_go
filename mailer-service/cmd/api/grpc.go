@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"mailer-services/mail"
 )
 
@@ -18,7 +19,9 @@ func (s *GRPCServer) SendMail(ctx context.Context, req *mail.MailRequest) (*mail
 		Message: req.GetMessage(),
 	}
 
-	if err := ValidateStruct(&payload); err != nil {
+	fmt.Println(payload)
+
+	if err := ValidateStruct(payload); err != nil {
 		return nil, errors.New(err.Message)
 	}
 
