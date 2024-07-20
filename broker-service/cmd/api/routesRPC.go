@@ -33,6 +33,18 @@ func HandleRPCSubmission(c *fiber.Ctx) error {
 		}
 
 		return insertLogsRPC(c, logsPayload)
+	case "mail":
+		mailPayload := MailPayload{
+			From: payload.Data["from"].(string),
+			To: payload.Data["to"].(string),
+			Subject: payload.Data["subject"].(string),
+			Message: payload.Data["message"].(string),
+		}
+		if valid := ValidateStruct(mailPayload); valid != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(valid)
+		}
+
+		return sendMailRPC(c, mailPayload)
 	default:
 		return WrapData(c, "Invalid action")
 	}
@@ -117,3 +129,42 @@ func insertLogsRPC(c *fiber.Ctx, payload LogsPayload) error {
 	}
 }
 
+func sendMailRPC(c *fiber.Ctx, payload MailPayload) error {
+	client, err := RPCPoolMail.Get()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(&ErrorResponseType{
+			Success: false,
+			Code:    "E_REQ",
+			Message: err.Error(),
+		})
+	}
+
+	var result string
+
+	err = client.Call("RPCServer.SendMain", payload, &result)
+
+	if err != nil {
+		var errorResponse ErrorResponseType
+    	if err := json.Unmarshal([]byte(err.Error()), &errorResponse); err == nil {
+			return c.Status(errorResponse.Status).JSON(&errorResponse)
+		} else {
+			return c.Status(fiber.StatusInternalServerError).JSON(&ErrorResponseType{
+				Success: false,
+				Code:    "E_REQ",
+				Message: err.Error(),
+			})
+		}
+	}
+
+	var response AppResponses
+	
+	if err := json.Unmarshal([]byte(result), &response); err  == nil {
+		return c.Status(fiber.StatusOK).JSON(&response)
+	} else {
+		return c.Status(fiber.StatusInternalServerError).JSON(&ErrorResponseType{
+			Success: false,
+			Code:    "E_REQ",
+			Message: err.Error(),
+		})
+	}
+}
