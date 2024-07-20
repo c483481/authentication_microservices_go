@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"mailer-services/mail"
 	"net"
 	"net/http"
 	"net/rpc"
@@ -15,6 +16,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/monitor"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/joho/godotenv"
+	"google.golang.org/grpc"
 
 	"github.com/goccy/go-json"
 )
@@ -24,6 +26,7 @@ const (
 	appVersion = "0.0.0"
 	appPort = 80
 	rpcPort = 5000
+	gRpcPort = 50000
 )
 
 var mailer Mail
@@ -51,6 +54,8 @@ func main() {
 	}
 
 	go startRPCServer()
+
+	go startGRPCServer()
 	
 	log.Println("Starting server...")
 	// set up config app
@@ -128,3 +133,20 @@ func startRPCServer() {
 		go rpc.ServeConn(conn)
 	}
 }
+
+func startGRPCServer() {
+	log.Println("Starting gRPC server on port", gRpcPort)
+	lis, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", gRpcPort))
+	if err != nil {
+		log.Fatalf("Error starting gRPC server: %v", err)
+	}
+
+	s := grpc.NewServer()
+	
+	mail.RegisterMailServiceServer(s, &GRPCServer{})
+
+	if err := s.Serve(lis); err != nil {
+		log.Fatalf("Error starting gRPC server: %v", err)
+	}
+}
+
