@@ -7,7 +7,6 @@ GoAuth is an authentication microservice built with Go, inspired by the Udemy co
 ## 🔧 Technologies Used
 
 - Go (Golang)
-- RabbitMQ
 - PostgreSQL
 - MongoDB
 - Mailhog
